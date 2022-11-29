@@ -1,5 +1,4 @@
 import torch
-from torch.nn import CrossEntropyLoss
 
 import colossalai
 from colossalai.core import global_context as gpc
@@ -127,7 +126,7 @@ def LaMDA_Trainer(cfg: CFG):
                     test_loss = engine.criterion(outputs, labels)
                     wandb.log({"test_loss": test_loss})
                     #Calculate perplexity
-                    perplexity = torch.exp(CrossEntropyLoss(outputs, labels))
+                    perplexity = torch.exp(test_loss)
                     wandb.log({"perplexity": perplexity})
                 
                     #engine.backward(test_loss)
@@ -135,7 +134,7 @@ def LaMDA_Trainer(cfg: CFG):
                     
             #Save model
             if cfg.save_model and epoch % cfg.save_every_n_epoches == 0:
-                save_checkpoint(f'LaMDA_EPOCH_{epoch}.pt', epoch, model.net)
+                save_checkpoint(f'LaMDA_EPOCH_{epoch}.pt', epoch, model)
 
         wandb.alert(
             title = 'Training Complete',
@@ -161,7 +160,7 @@ def LaMDA_Trainer(cfg: CFG):
         
         #save checkpoint
         if cfg.save_model:
-            hook_list.append(hooks.SaveCheckpointHook(cfg.save_every_n_epoches, f'LaMDA_EPOCH_{epoch}.pt', model.net))
+            hook_list.append(hooks.SaveCheckpointHook(cfg.save_every_n_epoches, f'LaMDA_EPOCH_{epoch}.pt', model))
 
         trainer.fit(
             train_dataloader = train_dataloader,

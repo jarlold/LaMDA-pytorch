@@ -44,6 +44,8 @@ print(logits)
 ## To Do list
 - [x] Make To Do list (we are now officially more organized than Character.AI devs)
 - [ ] Redo config system to require less hardcoding and more flexibility (Many PCs have too little disk space to fully load The Pile, need to get dataset streaming somehow working with this whole process)
+	- [ ] Switch to .yaml based config system
+	- [ ] Attempt to have it to where data can be streamed in instead of having to download the entire dataset at once.
 - [ ] Add inference only if someone wants to open-source LaMDA model weights
 - [ ] Add finetuning script
 - [ ] Add Sentencepiece tokenizer training script and integration
