@@ -37,7 +37,7 @@ class CFG:
     )
 
     depth: int = field(
-        default = 4,
+        default = 5,
         metadata = {'help': 'depth of the transformer'}
     )
 
@@ -71,12 +71,12 @@ class CFG:
     )
     
     train_dataset_name: Optional[str] = field(
-        default="hacker_news", 
+        default="enron_emails", 
         metadata={"help": "Path to Hugging Face training dataset directory."}
     )
 
     eval_dataset_name: Optional[str] = field(
-        default="hacker_news", 
+        default="enron_emails", 
         metadata={"help": "Path to Hugging Face validation dataset directory."}
     )
 
@@ -121,12 +121,18 @@ class CFG:
     )
     
     batch_size: Optional[int] = field(
-        default=16, 
+        default=1,
         metadata={"help": "Batch size for training and validation."}
+    )
+    #Setting this to True will break everything.
+    #Do not set this to True if you do not want to break everything.
+    stream_data: bool = field(
+        default=False,
+        metadata={"help": "Use HuggingFace's dataset streaming feature."}
     )
 
     save_to_path: Optional[str] = field(
-        default="''", 
+        default="''",
         metadata={"help": "Save the dataset to local disk."}
     )
 
@@ -140,6 +146,20 @@ class CFG:
     )
 
     project_name: Optional[str] = field(
-        default="LaMDA pre-training",
+        default="lamda-enron-trainingtest",
         metadata = {'help': 'Name of the project'}
+    )
+    
+    """
+    Configuration for training
+    """
+    
+    save_model: bool = field(
+        default = False,
+        metadata = {'help': 'Save model during training'}
+    )
+    
+    save_every_n_epoches: int = field(
+        default = 1,
+        metadata = {'help': 'If save_model is enabled, saves the model to a checkpoint after this many epoches since the last save'}
     )

@@ -1,9 +1,10 @@
 import torch
+from torch.nn import CrossEntropyLoss
 
 import colossalai
 from colossalai.core import global_context as gpc
 from colossalai.trainer import Trainer, hooks
-from colossalai.utils import MultiTimer
+from colossalai.utils import MultiTimer, save_checkpoint
 from colossalai.logging import disable_existing_loggers, get_dist_logger
 
 import wandb
@@ -80,36 +81,61 @@ def LaMDA_Trainer(cfg: CFG):
     engine.schedule.data_process_func = batch_data_process_func
 
     if cfg.use_wandb == True:
+        #wandb docs suggested to make a config dict, so here's a big fuck-off config dict
+        #probably has some use idk
+        wandb_config = {
+            "batch_size": cfg.batch_size,
+            "learning_rate": cfg.lr,
+            "weight_decay": gpc.config.WEIGHT_DECAY,
+            "clip_grad_norm": gpc.config.clip_grad_norm,
+            "grad_accumulation": gpc.config.gradient_accumulation,
+            "vocab_size": cfg.num_tokens,
+            "embed_dim": cfg.dim,
+            "num_layers": cfg.depth,
+            "num_attention_heads": cfg.heads,
+            "dim_head": cfg.dim_head,
+        }
+        
+        wandb.init(project = cfg.project_name, name = "default_name", config=wandb_config) #please change name before use
+        
+        for epoch in range(gpc.config.EPOCHS):
+            print(f"\nBeginning epoch {epoch} of training...")
+            # initialize Weights and Biases Logging
 
-        # initialize Weights and Biases Logging
-        wandb.init(project = cfg.project_name)
-
-        engine.train()
-        for step, batch in enumerate(train_dataloader):
-
-            inputs, labels = batch['inputs'].cuda(), batch['labels'].cuda()
+            engine.train()
+            for step, batch in enumerate(train_dataloader):
+                inputs, labels = batch['input_ids'].cuda(), batch['labels'].cuda()
             
-            engine.zero_grad()
-            outputs = engine(inputs)
+                engine.zero_grad()
+                outputs = engine(inputs)
 
-            train_loss = engine.loss_fn(outputs, labels)
-            wandb.log({"train_loss": train_loss})
+                train_loss = engine.criterion(outputs, labels)
+                wandb.log({"train_loss": train_loss})
 
-            engine.backward(train_loss)
-            engine.step()
-            wandb.log({"step": step})
+                engine.backward(train_loss)
+                engine.step()
+                wandb.log({"steps": (step * (epoch + 1))})
             
+            #after 1 cycle of training, we do 1 cycle of testing
+            print("Entering testing stage...")
             engine.eval()
             for step, batch in enumerate(eval_dataloader):
-                inputs, labels = batch['inputs'].cuda(), batch['labels'].cuda()
+                inputs, labels = batch['input_ids'].cuda(), batch['labels'].cuda()
 
                 with torch.no_grad():
                     outputs = engine(inputs)
-                    test_loss = engine.loss_fn(outputs, labels)
+                    test_loss = engine.criterion(outputs, labels)
                     wandb.log({"test_loss": test_loss})
+                    #Calculate perplexity
+                    perplexity = torch.exp(CrossEntropyLoss(outputs, labels))
+                    wandb.log({"perplexity": perplexity})
                 
-                engine.backward(test_loss)
-                engine.step()
+                    #engine.backward(test_loss)
+                    #engine.step()
+                    
+            #Save model
+            if cfg.save_model and epoch % cfg.save_every_n_epoches == 0:
+                save_checkpoint(f'LaMDA_EPOCH_{epoch}.pt', epoch, model.net)
 
         wandb.alert(
             title = 'Training Complete',
@@ -117,7 +143,6 @@ def LaMDA_Trainer(cfg: CFG):
         )
 
     else:
-
         # Time session with ColossalAI
         timer = MultiTimer()
 
@@ -133,6 +158,10 @@ def LaMDA_Trainer(cfg: CFG):
             hooks.LossHook(),
             hooks.LogMetricByEpochHook(logger)
         ]
+        
+        #save checkpoint
+        if cfg.save_model:
+            hook_list.append(hooks.SaveCheckpointHook(cfg.save_every_n_epoches, f'LaMDA_EPOCH_{epoch}.pt', model.net))
 
         trainer.fit(
             train_dataloader = train_dataloader,

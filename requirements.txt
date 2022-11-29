@@ -1,5 +1,6 @@
 datasets
 einops
+sentencepiece
 torch
 transformers
 wandb
