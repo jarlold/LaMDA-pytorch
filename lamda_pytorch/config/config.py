@@ -1,5 +1,5 @@
-from typing import Optional, ClassVar, List
 from dataclasses import dataclass, field
+from typing import Optional, ClassVar, List
 
 @dataclass
 class CFG:
@@ -27,7 +27,7 @@ class CFG:
     """
 
     num_tokens: int = field(
-        default = 50257,
+        default = 32000,
         metadata = {'help': 'number of tokens'}
     )
 
@@ -71,12 +71,12 @@ class CFG:
     )
     
     train_dataset_name: Optional[str] = field(
-        default="enron_emails", 
+        default="hacker_news", 
         metadata={"help": "Path to Hugging Face training dataset directory."}
     )
 
     eval_dataset_name: Optional[str] = field(
-        default="enron_emails", 
+        default="hacker_news", 
         metadata={"help": "Path to Hugging Face validation dataset directory."}
     )
 
@@ -106,7 +106,7 @@ class CFG:
     )
 
     tokenizer_name: Optional[str] = field(
-        default="gpt2",
+        default="sentencepiece",
         metadata={"help": "Tokenizer name."}
     )
 
@@ -148,6 +148,11 @@ class CFG:
     project_name: Optional[str] = field(
         default="lamda-enron-trainingtest",
         metadata = {'help': 'Name of the project'}
+    )
+    
+    run_name: Optional[str] = field(
+        default="default-run",
+        metadata = {'help': 'Name of the current run (please change before use)'}
     )
     
     """

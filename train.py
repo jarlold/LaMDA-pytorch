@@ -1,19 +1,19 @@
-import torch
-
 import colossalai
+import torch
+import wandb
+
 from colossalai.core import global_context as gpc
 from colossalai.trainer import Trainer, hooks
 from colossalai.utils import MultiTimer, save_checkpoint
 from colossalai.logging import disable_existing_loggers, get_dist_logger
 
-import wandb
+from sentencepiece import SentencePieceProcessor
+from transformers import AutoTokenizer
 
 from lamda_pytorch.config.config import CFG
 from lamda_pytorch.build_dataloader import build_dataloaders
 from lamda_pytorch.lamda_pytorch import lamda_model
 from lamda_pytorch.utils.utils import LaMDA_Loss, AutoregressiveWrapper
-
-from transformers import AutoTokenizer
 
 def LaMDA_Trainer(cfg: CFG):
     assert torch.cuda.is_available()
@@ -48,9 +48,16 @@ def LaMDA_Trainer(cfg: CFG):
     model = AutoregressiveWrapper(model)
 
     # setup dataloaders
-    if cfg.use_huggingface == True:
+    
+    #Honestly, setting cfg.use_huggingface to False would literally break everything, so there's really no point in even checking at this point.
+    #if cfg.use_huggingface == True:
+    if cfg.tokenizer_name == "sentencepiece":
+        tokenizer = SentencePieceProcessor()
+        tokenizer.load('wikipedia_32k_tokenizer.model')
+    else:
         tokenizer = AutoTokenizer.from_pretrained(cfg.tokenizer_name)
-        train_dataloader, eval_dataloader = build_dataloaders(cfg, tokenizer)
+    
+    train_dataloader, eval_dataloader = build_dataloaders(cfg, tokenizer)
 
     # loss function
     loss_fn = LaMDA_Loss()
@@ -63,7 +70,7 @@ def LaMDA_Trainer(cfg: CFG):
         weight_decay=gpc.config.WEIGHT_DECAY
     )
 
-    # initialze model, optimizer, criterion, and data loaders
+    # initialize model, optimizer, criterion, and data loaders
 
     engine, train_dataloader, _, _ = colossalai.initialize(
         model,
@@ -93,10 +100,12 @@ def LaMDA_Trainer(cfg: CFG):
             "num_layers": cfg.depth,
             "num_attention_heads": cfg.heads,
             "dim_head": cfg.dim_head,
+            "tokenizer": cfg.tokenizer_name,
         }
         
-        wandb.init(project = cfg.project_name, name = "default_name", config=wandb_config) #please change name before use
+        wandb.init(project=cfg.project_name, name=cfg.run_name, config=wandb_config)
         
+        print(f"Number of parameters in current LaMDA model: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
         for epoch in range(gpc.config.EPOCHS):
             print(f"\nBeginning epoch {epoch} of training...")
             # initialize Weights and Biases Logging
