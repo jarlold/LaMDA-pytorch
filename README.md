@@ -49,9 +49,10 @@ print(logits)
 - [ ] Find ways, modify architecture if necessary, to reduce memory usage
 	- [ ] Experiment with [quantization](https://pytorch.org/docs/stable/quantization.html), to reduce required memory? (Update: CPU only for now.)
 	- [ ] Vocabulary size results in big embedding = more required memory and inference time. Experiment with embedding.
+	- [ ] Large sequence lengths can absolutely destroy memory. Find a way to have large sequence lengths without taking up so much memory.
 - [ ] Experiment with improvements to the model:
 	- [ ] Try to see if [Mixture of Denoisers](https://arxiv.org/abs/2205.05131) can be added to the model/training process
-	- [ ] Parametrized GEGLU or perhaps other activation functions
+	- [x] Parametrized GEGLU or perhaps other activation functions (Squared ReLU shows promising improvement for now, may revisit later)
 - [ ] Redo config system to require less hardcoding and more flexibility (Many PCs have too little disk space to fully load The Pile, need to get dataset streaming somehow working with this whole process)
 	- [ ] Switch to .yaml based config system (maybe?)
 	- [ ] Attempt to have it to where data can be streamed in instead of having to download the entire dataset at once.

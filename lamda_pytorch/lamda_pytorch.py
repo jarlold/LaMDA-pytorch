@@ -36,6 +36,12 @@ class GEGLU(nn.Module):
     def forward(self, x):
         x, gates = x.chunk(2, dim = -1)
         return x * F.gelu(gates)
+        
+class SquaredRelu(nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, x):
+        return F.relu(x) ** 2
 
 # feedforward layer with gated-GELU activation function
 
@@ -45,9 +51,9 @@ class FeedForward(nn.Module):
         inner_dim = int(dim * mult)
         self.net = nn.Sequential(
             nn.Linear(dim, inner_dim * 2),
-            GEGLU(),
+            SquaredRelu(),
             nn.Dropout(dropout), # optional dropout
-            nn.Linear(inner_dim, dim)
+            nn.Linear(inner_dim * 2, dim)
         )
 
     def forward(self, x):
@@ -193,7 +199,7 @@ class LaMDA(nn.Module):
         logits = self.to_logits(x)
         return logits
 
-def lamda_model(quantized_logits = False, quantized_transformer = False): #note: quantized logits does not automatically guarantee a quantized transformer, quantized lamda refers to quantizing the linear layer in LaMDA.to_logits and that only
+def lamda_model(quantized_logits = False, quantized_transformer = False): # note: quantized logits does not automatically guarantee a quantized transformer, quantized lamda refers to quantizing the linear layer in LaMDA.to_logits and that only
     model = LaMDA(
         num_tokens = CFG.num_tokens,
         dim = CFG.dim,
@@ -204,16 +210,16 @@ def lamda_model(quantized_logits = False, quantized_transformer = False): #note:
     )
     if quantized_logits:
         quantized_model = quantize_dynamic(model, {nn.Linear}, dtype=torch.qint8)
-        del model #save on memory
+        del model # save on memory
         return quantized_model
-    else: #technically this doesn't need an else statement but I feel it looks nicer like this
+    else: # technically this doesn't need an else statement but I feel it looks nicer like this
         return model
 
 if __name__ == "__main__":
 
     lamda_base = lamda_model()
 
-    #lamda = AutoregressiveWrapper(lamda_base, max_seq_len = 2048)
+    # lamda = AutoregressiveWrapper(lamda_base, max_seq_len = 2048)
 
     tokens = torch.randint(0, lamda_base.num_tokens, (1, lamda_base.dim)) # mock token data
 

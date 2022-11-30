@@ -124,8 +124,8 @@ class CFG:
         default=1,
         metadata={"help": "Batch size for training and validation."}
     )
-    #Setting this to True will break everything.
-    #Do not set this to True if you do not want to break everything.
+    # Setting this to True will break everything.
+    # Do not set this to True if you do not want to break everything.
     stream_data: bool = field(
         default=False,
         metadata={"help": "Use HuggingFace's dataset streaming feature."}
@@ -145,12 +145,12 @@ class CFG:
         metadata = {'help': 'Whether to use Weights and Biases for logging'}
     )
 
-    project_name: Optional[str] = field(
+    project_name: str = field(
         default="lamda-enron-trainingtest",
         metadata = {'help': 'Name of the project'}
     )
     
-    run_name: Optional[str] = field(
+    run_name: str = field(
         default="default-run",
         metadata = {'help': 'Name of the current run (please change before use)'}
     )

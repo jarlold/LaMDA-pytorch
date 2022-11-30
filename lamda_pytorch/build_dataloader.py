@@ -45,16 +45,15 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
 
     def tokenize(examples):
         seq_length = args.tokenizer_seq_length
-        #print(f"examples type: {type(examples)}")
         
-        #sentencepiece method of encoding with SentencePieceProcessor
-        #TODO: Experiment with sampling to see if that does something.
+        # sentencepiece method of encoding with SentencePieceProcessor
+        # TODO: Experiment with sampling to see if that does something.
         if isinstance(tokenizer, SentencePieceProcessor):
-            #Directly specify that this is indeed input_ids, since it's not done automatically through HuggingFace wizard shit
+            # Directly specify that this is indeed input_ids, since it's not done automatically through HuggingFace wizard shit
             examples["input_ids"] = tokenizer.encode_as_ids(examples[args.select_input_string])
-            #Delete input key to avoid that getting put into the dataloader
+            # Delete input key to avoid that getting put into the dataloader
             del examples[args.select_input_string]
-        #huggingface method of encoding with AutoTokenizer
+        # huggingface method of encoding with AutoTokenizer
         else:
             examples = tokenizer(examples[args.select_input_string])
             

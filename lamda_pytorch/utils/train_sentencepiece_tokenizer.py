@@ -16,7 +16,7 @@ spm.SentencePieceTrainer.train(
     sentence_iterator = batch_iterator(dataset), 
     model_writer=model,
     vocab_size=32000,
-    model_type='unigram', #formerly BPE but unigram is apparently used in the HF tokenizers for models like T5
+    model_type='unigram', # BPE in the paper but unigram is apparently used in the HF tokenizers for models like T5
 )
 
 print("\nWriting to file...")
@@ -26,5 +26,5 @@ with open('out.model', 'wb') as f:
 #Test the tokenizer :)
 KYS = "Keep Your Smile. Keep on smiling"
 sp = spm.SentencePieceProcessor(model_proto=model.getvalue())
-print(sp.encode_as_pieces(KYS)) #['▁Keep', '▁Your', '▁Smile', '.', '▁Keep', '▁on', '▁', 's', 'mil', 'ing']
-print(sp.encode_as_ids(KYS)) #[15135, 2427, 16767, 5, 15135, 24, 17, 8, 10884, 42]
+print(sp.encode_as_pieces(KYS)) # Tokenizer in the repo: ['▁Keep', '▁Your', '▁Smile', '.', '▁Keep', '▁on', '▁', 's', 'mil', 'ing']
+print(sp.encode_as_ids(KYS)) # Tokenizer in the repo: [15135, 2427, 16767, 5, 15135, 24, 17, 8, 10884, 42]

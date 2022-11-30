@@ -49,8 +49,8 @@ def LaMDA_Trainer(cfg: CFG):
 
     # setup dataloaders
     
-    #Honestly, setting cfg.use_huggingface to False would literally break everything, so there's really no point in even checking at this point.
-    #if cfg.use_huggingface == True:
+    # Honestly, setting cfg.use_huggingface to False would literally break everything, so there's really no point in even checking at this point.
+    # if cfg.use_huggingface == True:
     if cfg.tokenizer_name == "sentencepiece":
         tokenizer = SentencePieceProcessor()
         tokenizer.load('wikipedia_32k_tokenizer.model')
@@ -87,8 +87,8 @@ def LaMDA_Trainer(cfg: CFG):
     engine.schedule.data_process_func = batch_data_process_func
 
     if cfg.use_wandb == True:
-        #wandb docs suggested to make a config dict, so here's a big fuck-off config dict
-        #probably has some use idk
+        # wandb docs suggested to make a config dict, so here's a big fuck-off config dict
+        # probably has some use idk
         wandb_config = {
             "batch_size": cfg.batch_size,
             "learning_rate": cfg.lr,
@@ -103,15 +103,15 @@ def LaMDA_Trainer(cfg: CFG):
             "tokenizer": cfg.tokenizer_name,
         }
         
+        # initialize Weights and Biases Logging
         wandb.init(project=cfg.project_name, name=cfg.run_name, config=wandb_config)
         
         print(f"Number of parameters in current LaMDA model: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
         for epoch in range(gpc.config.EPOCHS):
             print(f"\nBeginning epoch {epoch} of training...")
-            # initialize Weights and Biases Logging
-
-            engine.train()
+            
             for step, batch in enumerate(train_dataloader):
+                engine.train()
                 inputs, labels = batch['input_ids'].cuda(), batch['labels'].cuda()
             
                 engine.zero_grad()
@@ -123,25 +123,40 @@ def LaMDA_Trainer(cfg: CFG):
                 engine.backward(train_loss)
                 engine.step()
                 wandb.log({"steps": (step * (epoch + 1))})
-            
-            #after 1 cycle of training, we do 1 cycle of testing
-            print("Entering testing stage...")
-            engine.eval()
-            for step, batch in enumerate(eval_dataloader):
+                
+                # After 1 iter of training, we do 1 iter of testing.
+                # Temporarily moved here because 1 training run through the dataloader takes too long.
+                # As long as the length of the dataloaders are the same there shouldn't be any problems
+                engine.eval()
+                batch = next(iter(eval_dataloader))
                 inputs, labels = batch['input_ids'].cuda(), batch['labels'].cuda()
-
+                
                 with torch.no_grad():
                     outputs = engine(inputs)
                     test_loss = engine.criterion(outputs, labels)
                     wandb.log({"test_loss": test_loss})
-                    #Calculate perplexity
+                    # Calculate perplexity
                     perplexity = torch.exp(test_loss)
                     wandb.log({"perplexity": perplexity})
+            
+            # This will be uncommented when we actually have to train stuff properly
+            #print("Entering testing stage...")
+            #engine.eval()
+            #for step, batch in enumerate(eval_dataloader):
+            #    inputs, labels = batch['input_ids'].cuda(), batch['labels'].cuda()
+
+            #    with torch.no_grad():
+            #        outputs = engine(inputs)
+            #        test_loss = engine.criterion(outputs, labels)
+            #        wandb.log({"test_loss": test_loss})
+            #        # Calculate perplexity
+            #        perplexity = torch.exp(test_loss)
+            #        wandb.log({"perplexity": perplexity})
                 
-                    #engine.backward(test_loss)
-                    #engine.step()
+                    # engine.backward(test_loss)
+                    # engine.step()
                     
-            #Save model
+            # Save model
             if cfg.save_model and epoch % cfg.save_every_n_epoches == 0:
                 save_checkpoint(f'LaMDA_EPOCH_{epoch}.pt', epoch, model)
 
@@ -167,9 +182,9 @@ def LaMDA_Trainer(cfg: CFG):
             hooks.LogMetricByEpochHook(logger)
         ]
         
-        #save checkpoint
+        # save checkpoint
         if cfg.save_model:
-            hook_list.append(hooks.SaveCheckpointHook(cfg.save_every_n_epoches, f'LaMDA_EPOCH_{epoch}.pt', model))
+            hook_list.append(hooks.SaveCheckpointHook(cfg.save_every_n_epoches, f'LaMDA_CURRENT_CKPT.pt', model))
 
         trainer.fit(
             train_dataloader = train_dataloader,
