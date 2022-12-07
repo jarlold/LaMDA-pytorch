@@ -2,12 +2,14 @@ import colossalai
 import torch
 import wandb
 
+from colossalai.amp import AMP_TYPE
 from colossalai.core import global_context as gpc
 from colossalai.trainer import Trainer, hooks
 from colossalai.utils import MultiTimer, save_checkpoint
 from colossalai.logging import disable_existing_loggers, get_dist_logger
 
 from sentencepiece import SentencePieceProcessor
+from torch.cuda.amp import autocast
 from transformers import AutoTokenizer
 
 from lamda_pytorch.config.config import CFG
@@ -69,6 +71,10 @@ def LaMDA_Trainer(cfg: CFG):
         lr = gpc.config.LEARNING_RATE,
         weight_decay=gpc.config.WEIGHT_DECAY
     )
+    
+    # apply FP16 computation if wanted
+    if cfg.use_fp16:
+        model, optimizer, loss_fn = colossalai.amp.convert_to_amp(model, optimizer, loss_fn, AMP_TYPE.TORCH)
 
     # initialize model, optimizer, criterion, and data loaders
 

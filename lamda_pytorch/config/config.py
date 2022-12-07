@@ -66,7 +66,7 @@ class CFG:
     )
 
     eval_dataset_path: Optional[str] = field(
-        default="the_pile", 
+        default="conceptofmind/pile_enron_emails", 
         metadata={"help": "Path to Hugging Face validation dataset."}
     )
     
@@ -76,7 +76,7 @@ class CFG:
     )
 
     eval_dataset_name: Optional[str] = field(
-        default="hacker_news", 
+        default=None, 
         metadata={"help": "Path to Hugging Face validation dataset directory."}
     )
 
@@ -167,4 +167,9 @@ class CFG:
     save_every_n_epoches: int = field(
         default = 1,
         metadata = {'help': 'If save_model is enabled, saves the model to a checkpoint after this many epoches since the last save'}
+    )
+    
+    use_fp16: bool = field(
+        default = False,
+        metadata = {'help': 'Use FP16 for training'}
     )
