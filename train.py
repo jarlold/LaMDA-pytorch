@@ -2,14 +2,17 @@ import colossalai
 import torch
 import wandb
 
-from colossalai.amp import AMP_TYPE
+from colossalai.amp import AMP_TYPE, convert_to_amp
 from colossalai.core import global_context as gpc
 from colossalai.trainer import Trainer, hooks
+from colossalai.nn.optimizer import HybridAdam
 from colossalai.utils import MultiTimer, save_checkpoint
 from colossalai.logging import disable_existing_loggers, get_dist_logger
+from colossalai.zero.init_ctx import ZeroInitContext
+from colossalai.zero.sharded_model import ShardedModelV2
+from colossalai.zero.sharded_optim import ShardedOptimizerV2
 
 from sentencepiece import SentencePieceProcessor
-from torch.cuda.amp import autocast
 from transformers import AutoTokenizer
 
 from lamda_pytorch.config.config import CFG
@@ -31,8 +34,14 @@ def LaMDA_Trainer(cfg: CFG):
 
     args = parser.parse_args()
 
-    if cfg.use_zero == True:
-        pass
+    # Defining ZeRO in the config is what is meant to be done when working at a "high-level" as the ColossalAI docs put it
+    # Using Weights & Biases however requires the training to be done at "low-level" - that is, manually define the training loop.
+    # ZeRO can still be used in this case, but if W&B is enabled, it will have to be implemented at the low-level.
+    if cfg.use_zero and not cfg.use_wandb:
+        colossalai.launch_from_torch(
+            config='./lamda_pytorch/config/zero_config.py', 
+            seed = cfg.seed
+        )
     else:
         colossalai.launch_from_torch(
             config='./lamda_pytorch/config/colossal_config.py', 
@@ -46,8 +55,18 @@ def LaMDA_Trainer(cfg: CFG):
     logger.info("Initialized environment", ranks=[0])
 
     # LaMDA model
-    model = lamda_model()
-    model = AutoregressiveWrapper(model)
+    if cfg.use_zero:
+        with ZeroInitContext(target_device = torch.cuda.current_device(),
+                            shard_strategy=gpc.config.zero.model_config.shard_strategy,
+                            shard_param=True):
+            model = AutoregressiveWrapper(lamda_model())
+            # If this is being done at low level, model needs to be manually sharded
+            if cfg.use_wandb:
+                model = ShardedModelV2(model, TensorShardStrategy(), tensor_placement_policy='cpu', reuse_fp16_shard = True)
+            
+    else:
+        model = lamda_model()
+        model = AutoregressiveWrapper(model)
 
     # setup dataloaders
     
@@ -64,17 +83,26 @@ def LaMDA_Trainer(cfg: CFG):
     # loss function
     loss_fn = LaMDA_Loss()
 
-    # optimizer function
-
-    optimizer = torch.optim.AdamW(
-        model.parameters(), 
-        lr = gpc.config.LEARNING_RATE,
-        weight_decay=gpc.config.WEIGHT_DECAY
-    )
-    
-    # apply FP16 computation if wanted
+    # optimizer function, apply FP16 computation if wanted
     if cfg.use_fp16:
-        model, optimizer, loss_fn = colossalai.amp.convert_to_amp(model, optimizer, loss_fn, AMP_TYPE.TORCH)
+        optimizer = HybridAdam(
+            model.parameters(),
+            lr = gpc.config.LEARNING_RATE,
+            weight_decay=gpc.config.WEIGHT_DECAY
+        )
+        # once again, if using ZeRO, shard optimizer
+        if cfg.use_zero:
+            optimizer = ShardedOptimizerV2(model, optimizer, initial_scale=2**5)
+        
+        model, _, loss_fn = convert_to_amp(model, optimizer, loss_fn, AMP_TYPE.NAIVE) # do not return 2nd parameter since HybridAdam is already optimized for FP16 (?)
+        
+    else:
+        optimizer = torch.optim.AdamW(
+            model.parameters(), 
+            lr = gpc.config.LEARNING_RATE,
+            weight_decay=gpc.config.WEIGHT_DECAY
+        )
+    
 
     # initialize model, optimizer, criterion, and data loaders
 
@@ -92,7 +120,7 @@ def LaMDA_Trainer(cfg: CFG):
 
     engine.schedule.data_process_func = batch_data_process_func
 
-    if cfg.use_wandb == True:
+    if cfg.use_wandb:
         # wandb docs suggested to make a config dict, so here's a big fuck-off config dict
         # probably has some use idk
         wandb_config = {

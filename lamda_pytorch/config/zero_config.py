@@ -8,5 +8,8 @@ zero = dict(
     )
 )
 
+EPOCHS = 1
+LEARNING_RATE = 0.0001
+WEIGHT_DECAY = 1e-2
 gradient_accumulation = 4
 clip_grad_norm = 1.0
