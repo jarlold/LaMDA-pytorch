@@ -160,7 +160,7 @@ class CFG:
     """
     
     save_model: bool = field(
-        default = False,
+        default = True,
         metadata = {'help': 'Save model during training'}
     )
     
