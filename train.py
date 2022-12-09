@@ -141,6 +141,7 @@ def LaMDA_Trainer(cfg: CFG):
         wandb.init(project=cfg.project_name, name=cfg.run_name, config=wandb_config)
         
         print(f"Number of parameters in current LaMDA model: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+        
         for epoch in range(gpc.config.EPOCHS):
             print(f"\nBeginning epoch {epoch} of training...")
             
@@ -219,6 +220,8 @@ def LaMDA_Trainer(cfg: CFG):
         # save checkpoint
         if cfg.save_model:
             hook_list.append(hooks.SaveCheckpointHook(cfg.save_every_n_epoches, f'LaMDA_CURRENT_CKPT.pt', model))
+            
+        print(f"Number of parameters in current LaMDA model: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
         trainer.fit(
             train_dataloader = train_dataloader,

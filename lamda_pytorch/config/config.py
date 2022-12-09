@@ -61,7 +61,7 @@ class CFG:
     )
 
     train_dataset_path: Optional[str] = field(
-        default="the_pile", 
+        default="conceptofmind/pile_enron_emails", 
         metadata={"help": "Path to Hugging Face training dataset."}
     )
 
@@ -71,7 +71,7 @@ class CFG:
     )
     
     train_dataset_name: Optional[str] = field(
-        default="hacker_news", 
+        default=None, 
         metadata={"help": "Path to Hugging Face training dataset directory."}
     )
 
