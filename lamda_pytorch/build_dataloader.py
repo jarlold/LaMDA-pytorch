@@ -16,6 +16,9 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     Build dataloaders for the model.
     """
 
+    if args.stream_data:
+        print("STREAM DATA IS ENABLED SO THINGS SHOULD BREAK NOW")
+
     # Load training dataset
     load_train_data = load_dataset(args.train_dataset_path, name = args.train_dataset_name, split = args.choose_train_split, streaming = args.stream_data)
 
