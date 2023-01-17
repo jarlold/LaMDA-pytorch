@@ -19,10 +19,13 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     if args.stream_data:
         print("STREAM DATA IS ENABLED SO THINGS SHOULD BREAK NOW")
     else:
-        print("STREA DATA IS DISABLED STILL FOR SOME ANNOYING REASON")
+        print("STREAM DATA IS DISABLED STILL FOR SOME ANNOYING REASON")
 
     # Load training dataset
     load_train_data = load_dataset(args.train_dataset_path, name = args.train_dataset_name, split = args.choose_train_split, streaming = args.stream_data)
+
+    if args.stream_data:
+        streamable_data.set_format = Dataset.set_format #big brain high iq very smart 
 
     # Remove unused columns from the training dataset
     load_train_data = load_train_data.remove_columns(args.remove_train_columns)
