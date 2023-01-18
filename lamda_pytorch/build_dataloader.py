@@ -25,7 +25,7 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     load_train_data = load_dataset(args.train_dataset_path, name = args.train_dataset_name, split = args.choose_train_split, streaming = args.stream_data)
 
     if args.stream_data:
-        streamable_data.set_format = Dataset.set_format #big brain high iq very smart 
+        load_train_data.set_format = Dataset.set_format #big brain high iq very smart 
 
     # Remove unused columns from the training dataset
     load_train_data = load_train_data.remove_columns(args.remove_train_columns)
