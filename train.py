@@ -149,6 +149,7 @@ def LaMDA_Trainer(cfg: CFG):
                 engine.train()
                 inputs, labels = batch['input_ids'].cuda(), batch['labels'].cuda()
 
+                print("HERE ARE WHAT THE INPUTS LOOK LIKE")
                 print(inputs)
                 print(labels)
                 exit()
