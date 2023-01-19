@@ -107,10 +107,12 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     eval_with_torch = tokenized_eval_dataset #.set_format(type = "torch")
 
     # Train dataset used for sampling.
-    sample_train_dataset = DistributedSampler(train_with_torch, shuffle = True) if get_world_size() > 1 else None
+    #sample_train_dataset = DistributedSampler(train_with_torch, shuffle = True) if get_world_size() > 1 else None
+    sample_train_dataset = DistributedSampler(train_with_torch) if get_world_size() > 1 else None
 
     # Validation dataset used for sampling.
-    sample_eval_dataset = DistributedSampler(eval_with_torch, shuffle = False) if get_world_size() > 1 else None
+    #sample_eval_dataset = DistributedSampler(eval_with_torch, shuffle = False) if get_world_size() > 1 else None
+    sample_eval_dataset = DistributedSampler(eval_with_torch) if get_world_size() > 1 else None
 
     # Create the train dataloader. If the length of a tokenized input sequence is less than 2048 drop it.
     train_dataloader = DataLoader(tokenized_train_dataset, shuffle = True, sampler = sample_train_dataset, drop_last = True, collate_fn = default_data_collator, batch_size = args.batch_size)
