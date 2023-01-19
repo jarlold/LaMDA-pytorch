@@ -96,15 +96,15 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     
     tokenized_eval_dataset = shuffled_eval_files.map(tokenize, batched = True, remove_columns = [args.select_input_string])
 
-    if args.stream_data:
-        tokenized_train_dataset.set_format = Dataset.set_format #big brain high iq very smart 
-        tokenized_eval_dataset.set_format = Dataset.set_format #big brain high iq very smart 
+    #if args.stream_data:
+    #    tokenized_train_dataset.set_format = Dataset.set_format #big brain high iq very smart 
+    #    tokenized_eval_dataset.set_format = Dataset.set_format #big brain high iq very smart 
 
     # Convert the format of the tokenized train dataset to PyTorch Tensors
-    train_with_torch = tokenized_train_dataset.set_format(type = "torch")
+    train_with_torch = tokenized_train_dataset #.set_format(type = "torch")
 
     # Convert the format of the tokenized validation dataset to PyTorch Tensors
-    eval_with_torch = tokenized_eval_dataset.set_format(type = "torch")
+    eval_with_torch = tokenized_eval_dataset #.set_format(type = "torch")
 
     # Train dataset used for sampling.
     sample_train_dataset = DistributedSampler(train_with_torch, shuffle = True) if get_world_size() > 1 else None
