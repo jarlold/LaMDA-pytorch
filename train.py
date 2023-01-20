@@ -21,7 +21,7 @@ from lamda_pytorch.lamda_pytorch import lamda_model
 from lamda_pytorch.utils.utils import LaMDA_Loss, AutoregressiveWrapper
 
 def LaMDA_Trainer(cfg: CFG):
-    #assert torch.cuda.is_available()
+    assert torch.cuda.is_available()
     disable_existing_loggers()
 
     parser = colossalai.get_default_parser()
