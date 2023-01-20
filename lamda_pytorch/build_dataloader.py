@@ -29,10 +29,10 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     load_eval_data = load_eval_data.remove_columns(args.remove_eval_columns)
 
     # Shuffle the training input files.
-    shuffled_train_files = load_train_data.shuffle(seed = args.seed)
+    shuffled_train_files = load_train_data #.shuffle(seed = args.seed)
 
     # Shuffle the validation input files.
-    shuffled_eval_files = load_eval_data.shuffle(seed = args.seed)
+    shuffled_eval_files = load_eval_data #.shuffle(seed = args.seed)
 
     """
     A sequence length of x is used for the model. Input examples are concatenated
@@ -97,13 +97,13 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     eval_with_torch = tokenized_eval_dataset.set_format(type = "torch")
 
     # Train dataset used for sampling.
-    sample_train_dataset = DistributedSampler(train_with_torch, shuffle = True) if get_world_size() > 1 else None
+    sample_train_dataset = DistributedSampler(train_with_torch, shuffle = False if get_world_size() > 1 else None
 
     # Validation dataset used for sampling.
     sample_eval_dataset = DistributedSampler(eval_with_torch, shuffle = False) if get_world_size() > 1 else None
 
     # Create the train dataloader. If the length of a tokenized input sequence is less than 2048 drop it.
-    train_dataloader = DataLoader(tokenized_train_dataset, shuffle = True, sampler = sample_train_dataset, drop_last = True, collate_fn = default_data_collator, batch_size = args.batch_size)
+    train_dataloader = DataLoader(tokenized_train_dataset, shuffle = False sampler = sample_train_dataset, drop_last = True, collate_fn = default_data_collator, batch_size = args.batch_size)
 
     # Create the validation dataloader. If the length of a tokenized input sequence is less than 2048 drop it.
     eval_dataloader = DataLoader(tokenized_eval_dataset, sampler = sample_eval_dataset, drop_last = True, collate_fn = default_data_collator, batch_size = args.batch_size)
