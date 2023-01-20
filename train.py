@@ -77,12 +77,19 @@ def LaMDA_Trainer(cfg: CFG):
         tokenizer.load('wikipedia_32k_tokenizer.model')
     else:
         tokenizer = AutoTokenizer.from_pretrained(cfg.tokenizer_name)
+
+
+#    stream_dataloader = 
+    #stream_first_entry = next(iter(stream_dataloader))
     
     train_dataloader, eval_dataloader = build_dataloaders(cfg, tokenizer)
+    ndl = next(iter(train_dataloader))
 
     print(
-        next(iter(train_dataloader))
+            ndl
         )
+
+    print(ndl.__class__)
 
     exit()
     # loss function
