@@ -95,6 +95,7 @@ def LaMDA_Trainer(cfg: CFG):
         print(i)
 
     print(ndl['input_ids'].shape)
+    print(ndl['input_ids'].__class__)
 
     exit()
     # loss function
