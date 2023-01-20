@@ -1,2 +1,2 @@
-from lamda_pytorch.build_dataloader import build_dataloaders
+lamda_pytorch.build_dataloader
 lamda_pytorch.build_dataloader.main()
