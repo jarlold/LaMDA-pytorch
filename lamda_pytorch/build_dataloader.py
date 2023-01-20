@@ -16,8 +16,6 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     Build dataloaders for the model.
     """
 
-    args.stream_data = False
-
     # Load training dataset
     load_train_data = load_dataset(args.train_dataset_path, name = args.train_dataset_name, split = args.choose_train_split, streaming = args.stream_data)
 
@@ -114,7 +112,8 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     print('Done building dataloaders')
     return train_dataloader, eval_dataloader
 
-def main():
+if __name__ == '__main__':
+    
     # Get Dataloader Configuration Arguments
     data_loader_args = CFG()
 
@@ -128,7 +127,4 @@ def main():
     train_loader, eval_loader = build_dataloaders(args = data_loader_args, tokenizer = tokenizer)
 
     print(next(iter(train_loader))['input_ids'])
-
-if __name__ == '__main__':
-    main() 
-    #print(next(iter(train_loader))['input_ids'].shape)
+    print(next(iter(train_loader))['input_ids'].shape)
