@@ -16,14 +16,10 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     Build dataloaders for the model.
     """
 
-    if args.stream_data:
-        print("STREAM DATA IS ENABLED SO THINGS SHOULD BREAK NOW")
-    else:
-        print("STREAM DATA IS DISABLED STILL FOR SOME ANNOYING REASON")
+    args.stream_data = False
 
     # Load training dataset
     load_train_data = load_dataset(args.train_dataset_path, name = args.train_dataset_name, split = args.choose_train_split, streaming = args.stream_data)
-
 
     # Remove unused columns from the training dataset
     load_train_data = load_train_data.remove_columns(args.remove_train_columns)
@@ -96,27 +92,20 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     
     tokenized_eval_dataset = shuffled_eval_files.map(tokenize, batched = True, remove_columns = [args.select_input_string])
 
-    #if args.stream_data:
-    #    tokenized_train_dataset.set_format = Dataset.set_format #big brain high iq very smart 
-    #    tokenized_eval_dataset.set_format = Dataset.set_format #big brain high iq very smart 
-
     # Convert the format of the tokenized train dataset to PyTorch Tensors
-    train_with_torch = tokenized_train_dataset #.set_format(type = "torch")
+    train_with_torch = tokenized_train_dataset.set_format(type = "torch")
 
     # Convert the format of the tokenized validation dataset to PyTorch Tensors
-    eval_with_torch = tokenized_eval_dataset #.set_format(type = "torch")
+    eval_with_torch = tokenized_eval_dataset.set_format(type = "torch")
 
     # Train dataset used for sampling.
-    #sample_train_dataset = DistributedSampler(train_with_torch, shuffle = True) if get_world_size() > 1 else None
-    sample_train_dataset = DistributedSampler(train_with_torch) if get_world_size() > 1 else None
+    sample_train_dataset = DistributedSampler(train_with_torch, shuffle = True) if get_world_size() > 1 else None
 
     # Validation dataset used for sampling.
-    #sample_eval_dataset = DistributedSampler(eval_with_torch, shuffle = False) if get_world_size() > 1 else None
-    sample_eval_dataset = DistributedSampler(eval_with_torch) if get_world_size() > 1 else None
+    sample_eval_dataset = DistributedSampler(eval_with_torch, shuffle = False) if get_world_size() > 1 else None
 
     # Create the train dataloader. If the length of a tokenized input sequence is less than 2048 drop it.
-    #train_dataloader = DataLoader(tokenized_train_dataset, shuffle = True, sampler = sample_train_dataset, drop_last = True, collate_fn = default_data_collator, batch_size = args.batch_size)
-    train_dataloader = DataLoader(tokenized_train_dataset, sampler = sample_train_dataset, drop_last = True, collate_fn = default_data_collator, batch_size = args.batch_size)
+    train_dataloader = DataLoader(tokenized_train_dataset, shuffle = True, sampler = sample_train_dataset, drop_last = True, collate_fn = default_data_collator, batch_size = args.batch_size)
 
     # Create the validation dataloader. If the length of a tokenized input sequence is less than 2048 drop it.
     eval_dataloader = DataLoader(tokenized_eval_dataset, sampler = sample_eval_dataset, drop_last = True, collate_fn = default_data_collator, batch_size = args.batch_size)
@@ -125,8 +114,7 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     print('Done building dataloaders')
     return train_dataloader, eval_dataloader
 
-if __name__ == '__main__':
-    
+def main():
     # Get Dataloader Configuration Arguments
     data_loader_args = CFG()
 
@@ -140,4 +128,7 @@ if __name__ == '__main__':
     train_loader, eval_loader = build_dataloaders(args = data_loader_args, tokenizer = tokenizer)
 
     print(next(iter(train_loader))['input_ids'])
-    print(next(iter(train_loader))['input_ids'].shape)
+
+if __name__ == '__main__':
+    main() 
+    #print(next(iter(train_loader))['input_ids'].shape)
