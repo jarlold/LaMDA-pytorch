@@ -1,3 +1,2 @@
-import lambda_pytorch.build_dataloader
-
+from lamda_pytorch.build_dataloader import build_dataloaders
 lambda_pytorch.build_dataloader.main()
