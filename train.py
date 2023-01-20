@@ -91,6 +91,9 @@ def LaMDA_Trainer(cfg: CFG):
 
     print(ndl.__class__)
 
+    for i in ndl:
+        print(i)
+
     exit()
     # loss function
     loss_fn = LaMDA_Loss()
