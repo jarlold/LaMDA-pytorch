@@ -97,7 +97,7 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     eval_with_torch = tokenized_eval_dataset.set_format(type = "torch")
 
     # Train dataset used for sampling.
-    sample_train_dataset = DistributedSampler(train_with_torch, shuffle = False if get_world_size() > 1 else None
+    sample_train_dataset = DistributedSampler(train_with_torch, shuffle = False) if get_world_size() > 1 else None
 
     # Validation dataset used for sampling.
     sample_eval_dataset = DistributedSampler(eval_with_torch, shuffle = False) if get_world_size() > 1 else None
