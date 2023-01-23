@@ -17,6 +17,7 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     """
 
     if args.stream_data:
+        print("Creating streamable dataloader")
         return build_streamable_dataloader.build_dataloaders()
 
     # Load training dataset
