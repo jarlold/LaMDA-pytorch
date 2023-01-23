@@ -127,7 +127,7 @@ class CFG:
     # Setting this to True will break everything.
     # Do not set this to True if you do not want to break everything.
     stream_data: bool = field(
-        default=False,
+        default=True,
         metadata={"help": "Use HuggingFace's dataset streaming feature."}
     )
 
