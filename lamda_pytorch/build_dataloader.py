@@ -7,6 +7,7 @@ from sentencepiece import SentencePieceProcessor
 from torch.distributed import get_world_size
 from torch.utils.data import DataLoader, DistributedSampler
 from transformers import AutoTokenizer, default_data_collator
+import build_streamable_dataloader
 
 from .config.config import CFG
 
@@ -15,6 +16,9 @@ def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePiecePr
     """
     Build dataloaders for the model.
     """
+
+    if args.stream_data:
+        return build_streamable_dataloader.build_dataloaders()
 
     # Load training dataset
     load_train_data = load_dataset(args.train_dataset_path, name = args.train_dataset_name, split = args.choose_train_split, streaming = args.stream_data)
