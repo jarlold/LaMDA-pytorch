@@ -59,7 +59,7 @@ def build_dataloaders():
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_args)
 
     load_train_data = load_dataset(args.train_dataset_path, name = args.train_dataset_name, split = args.choose_train_split, streaming = True)
-    load_test= load_dataset(args.train_dataset_path, name = args.train_dataset_name, split = args.choose_eval_split, streaming = True)
+    load_test_data = load_dataset(args.train_dataset_path, name = args.train_dataset_name, split = args.choose_eval_split, streaming = True)
 
     # Run the tokenizer on each example
     map_tokenizer = lambda x: prepare_example(tokenizer, x)
