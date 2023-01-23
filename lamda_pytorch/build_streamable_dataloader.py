@@ -76,7 +76,7 @@ def make_streamable_dataloader():
 
 
 
-if __name__ == "__main__":
+if FALSE:
     streamable_data = make_test_dataloader()
 
     #test_dataloader = make_test_dataloader()

@@ -78,11 +78,8 @@ def LaMDA_Trainer(cfg: CFG):
     else:
         tokenizer = AutoTokenizer.from_pretrained(cfg.tokenizer_name)
 
-
-#    stream_dataloader = 
-    #stream_first_entry = next(iter(stream_dataloader))
     
-    train_dataloader, eval_dataloader = wrap_dataloader(build_dataloaders(cfg, tokenizer))
+    train_dataloader, eval_dataloader = build_dataloaders(cfg, tokenizer)
 
 
     # loss function
