@@ -1,7 +1,7 @@
 from datasets import IterableDataset, load_dataset
 from torch.utils.data import DataLoader, DistributedSampler
 from transformers import AutoTokenizer, default_data_collator
-from config.config import CFG
+from .config.config import CFG
 
 import copy
 from itertools import chain
