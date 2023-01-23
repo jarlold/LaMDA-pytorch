@@ -82,22 +82,9 @@ def LaMDA_Trainer(cfg: CFG):
 #    stream_dataloader = 
     #stream_first_entry = next(iter(stream_dataloader))
     
-    train_dataloader, eval_dataloader = build_dataloaders(cfg, tokenizer)
-    ndl = next(iter(train_dataloader))
+    train_dataloader, eval_dataloader = wrap_dataloader(build_dataloaders(cfg, tokenizer))
 
-    print(
-            ndl
-        )
 
-    print(ndl.__class__)
-
-    for i in ndl:
-        print(i)
-
-    print(ndl['input_ids'].shape)
-    print(ndl['input_ids'].__class__)
-
-    exit()
     # loss function
     loss_fn = LaMDA_Loss()
 
