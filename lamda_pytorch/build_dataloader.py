@@ -7,10 +7,9 @@ from sentencepiece import SentencePieceProcessor
 from torch.distributed import get_world_size
 from torch.utils.data import DataLoader, DistributedSampler
 from transformers import AutoTokenizer, default_data_collator
-from . import build_streamable_dataloader
 
 from .config.config import CFG
-
+from . import build_streamable_dataloader
 
 def build_dataloaders(args: CFG, tokenizer: Union[AutoTokenizer, SentencePieceProcessor]):
     """
