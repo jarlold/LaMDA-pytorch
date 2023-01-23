@@ -53,7 +53,7 @@ def prepare_example(tokenizer, example):
     result["labels"] = input_ids
     return result
 
-def make_streamable_dataloader():
+def build_dataloaders():
     # Get the dataset
     tokenizer_args = 'gpt2'
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_args)
