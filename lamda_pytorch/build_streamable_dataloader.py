@@ -66,17 +66,17 @@ def build_dataloaders():
     tokenized_train_data = load_train_data.map(map_tokenizer, input_columns=args.select_input_string)
     tokenized_test_data = load_test_data.map(map_tokenizer, input_columns=args.select_input_string)
 
-    # Turn the tokenized examples into a DataLoader for collosal AI to use
-    train_dl = DataLoader(tokenized_train_data)
-    test_dl= DataLoader(tokenized_test_data)
-
     # And now we'll need to add in some sort of length function
     # Since streaming doesn't let us know this, we'll just put it in the config
     len_train = lambda x: args.train_len_if_stream
     len_eval = lambda x: args.eval_len_if_stream
 
-    train_dl.dataset.__len__ = len_train
-    test_dl.dataset.__len__ = len_eval
+    tokenized_train_data.__len__ = len_train
+    tokenzied_test_data.__len__ = len_eval
+
+    # Turn the tokenized examples into a DataLoader for collosal AI to use
+    train_dl = DataLoader(tokenized_train_data)
+    test_dl= DataLoader(tokenized_test_data)
 
     # Put our little sequence length fix over it
     return train_dl, test_dl
