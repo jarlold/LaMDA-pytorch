@@ -75,8 +75,8 @@ def build_dataloaders():
     len_train = lambda x: args.train_len_if_stream
     len_eval = lambda x: args.eval_len_if_stream
 
-    train_dl.__len__ = len_train
-    test_dl.__len__ = len_eval
+    train_dl.dataset.__len__ = len_train
+    test_dl.dataset.__len__ = len_eval
 
     # Put our little sequence length fix over it
     return train_dl, test_dl
