@@ -127,8 +127,18 @@ class CFG:
     # Setting this to True will break everything.
     # Do not set this to True if you do not want to break everything.
     stream_data: bool = field(
-        default=False,
+        default=True,
         metadata={"help": "Use HuggingFace's dataset streaming feature."}
+    )
+
+    train_len_if_stream: bool = field(
+        default=874378,
+        metadata={"help": "If using streaming, the total number of data points in train set."}
+    )
+
+    eval_len_if_stream: bool = field(
+        default=924632,
+        metadata={"help": "If using streaming, the total number of data points in test set."}
     )
 
     save_to_path: Optional[str] = field(

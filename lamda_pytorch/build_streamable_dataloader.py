@@ -70,6 +70,14 @@ def build_dataloaders():
     train_dl = DataLoader(tokenized_train_data)
     test_dl= DataLoader(tokenized_test_data)
 
+    # And now we'll need to add in some sort of length function
+    # Since streaming doesn't let us know this, we'll just put it in the config
+    len_train = lambda x: args.train_len_if_stream
+    len_eval = lambda x: args.eval_len_if_stream
+
+    train_dl.__len__ = len_train
+    test_dl.__len__ = len_eval
+
     # Put our little sequence length fix over it
     return train_dl, test_dl
 
