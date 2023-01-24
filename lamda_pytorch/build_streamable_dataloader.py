@@ -52,11 +52,11 @@ def prepare_example(tokenizer, example):
     result["labels"] = input_ids
     return result
 
-class LengthDefinedIterableDatasetTrain(datasets.IterableDataset):
+class LengthDefinedIterableDatasetTrain(IterableDataset):
     def __len__(self):
         return args.train_len_if_stream
 
-class LengthDefinedIterableDatasetEval(datasets.IterableDataset):
+class LengthDefinedIterableDatasetEval(IterableDataset):
     def __len__(self):
         return args.eval_len_if_stream
 
