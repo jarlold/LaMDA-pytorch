@@ -72,7 +72,7 @@ def build_dataloaders():
     len_eval = lambda x: args.eval_len_if_stream
 
     tokenized_train_data.__len__ = len_train
-    tokenzied_test_data.__len__ = len_eval
+    tokenized_test_data.__len__ = len_eval
 
     # Turn the tokenized examples into a DataLoader for collosal AI to use
     train_dl = DataLoader(tokenized_train_data)
