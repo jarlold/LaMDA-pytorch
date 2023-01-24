@@ -20,6 +20,16 @@ from lamda_pytorch.build_dataloader import build_dataloaders
 from lamda_pytorch.lamda_pytorch import lamda_model
 from lamda_pytorch.utils.utils import LaMDA_Loss, AutoregressiveWrapper
 
+
+cfg = CFG()
+
+if cfg.tokenizer_name == "sentencepiece":
+    tokenizer = SentencePieceProcessor()
+    tokenizer.load('wikipedia_32k_tokenizer.model')
+else:
+    tokenizer = AutoTokenizer.from_pretrained(cfg.tokenizer_name)
+
+
 train_dataloader, eval_dataloader = build_dataloaders(cfg, tokenizer)
 print("Train length ", len(train_dataloader))
 print("Eval length ", len(eval_dataloader))
