@@ -81,8 +81,8 @@ def LaMDA_Trainer(cfg: CFG):
     
     train_dataloader, eval_dataloader = build_dataloaders(cfg, tokenizer)
 
-    print("Train ", train_dataloader)
-    print("Eval ", eval_dataloader)
+    print("Train ", len(train_dataloader))
+    print("Eval ", len(eval_dataloader))
 
     exit()
 
