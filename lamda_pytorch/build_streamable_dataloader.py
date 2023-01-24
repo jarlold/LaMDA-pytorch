@@ -20,7 +20,6 @@ args = CFG
 # Used to store the "offcut" after cutting the input from the db into the seq_length form config
 PREV_OFFCUT = torch.tensor([])
 
-
 def prepare_example(tokenizer, example):
     global PREV_OFFCUT
     seq_length = args.tokenizer_seq_length
@@ -53,6 +52,14 @@ def prepare_example(tokenizer, example):
     result["labels"] = input_ids
     return result
 
+class LengthDefinedIterableDatasetTrain(datasets.IterableDataset):
+    def __len__(self):
+        return args.train_len_if_stream
+
+class LengthDefinedIterableDatasetEval(datasets.IterableDataset):
+    def __len__(self):
+        return args.eval_len_if_stream
+
 def build_dataloaders():
     # Get the dataset
     tokenizer_args = 'gpt2'
@@ -68,11 +75,9 @@ def build_dataloaders():
 
     # And now we'll need to add in some sort of length function
     # Since streaming doesn't let us know this, we'll just put it in the config
-    len_train = lambda x: args.train_len_if_stream
-    len_eval = lambda x: args.eval_len_if_stream
+    tokenized_train_data = LengthDefinedIterableDatasetTrain(tokenized_train_data)
+    tokenized_test_data = LengthDefinedIterableDatasetEval(tokenized_test_data)
 
-    tokenized_train_data.__len__ = len_train
-    tokenized_test_data.__len__ = len_eval
 
     # Turn the tokenized examples into a DataLoader for collosal AI to use
     train_dl = DataLoader(tokenized_train_data)
