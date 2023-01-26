@@ -52,13 +52,13 @@ def prepare_example(tokenizer, example):
     result["labels"] = input_ids
     return result
 
-class LengthDefinedIterableDatasetTrain(IterableDataset):
+class WrapDataloader(DataLoader):
     def __len__(self):
-        return args.train_len_if_stream
+        return self.manual_length
 
-class LengthDefinedIterableDatasetEval(IterableDataset):
-    def __len__(self):
-        return args.eval_len_if_stream
+    def manually_set_length(self, length):
+        self.manual_length = length
+
 
 def build_dataloaders():
     # Get the dataset
@@ -75,13 +75,15 @@ def build_dataloaders():
 
     # And now we'll need to add in some sort of length function
     # Since streaming doesn't let us know this, we'll just put it in the config
-    tokenized_train_data = LengthDefinedIterableDatasetTrain(tokenized_train_data)
-    tokenized_test_data = LengthDefinedIterableDatasetEval(tokenized_test_data)
+    train_dl = WrapDataloader(tokenized_train_data)
+    test_dl = WrapDataloader(tokenized_test_data)
 
+    train_dl.manually_set_length(args.train_len_if_stream)
+    test_dl.manually_set_length(args.eval_len_if_stream)
 
     # Turn the tokenized examples into a DataLoader for collosal AI to use
-    train_dl = DataLoader(tokenized_train_data)
-    test_dl= DataLoader(tokenized_test_data)
+    #train_dl = DataLoader(patched_train_data)
+    #test_dl= DataLoader(patched_test_data)
 
     # Put our little sequence length fix over it
     return train_dl, test_dl
@@ -89,17 +91,16 @@ def build_dataloaders():
 
 
 
-if False:
-    streamable_data = make_test_dataloader()
+if __name__ == "__main__":
+    streamable_data, _ = make_test_dataloader()
 
-    #test_dataloader = make_test_dataloader()
     print("getting first entry")
     stream_first_entry = next(iter(streamable_data))
     print(stream_first_entry['input_ids']) 
     print('next shape', stream_first_entry['input_ids'].shape)
 
-    print('nxt')
-    stream_first_entry = next(iter(streamable_data))
-    print(stream_first_entry['input_ids']) 
-    print('next shape', stream_first_entry['input_ids'].shape)
+#   print('nxt')
+#   stream_first_entry = next(iter(streamable_data))
+#   print(stream_first_entry['input_ids']) 
+#   print('next shape', stream_first_entry['input_ids'].shape)
 
