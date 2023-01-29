@@ -73,34 +73,20 @@ def build_dataloaders():
     tokenized_train_data = load_train_data.map(map_tokenizer, input_columns=args.select_input_string)
     tokenized_test_data = load_test_data.map(map_tokenizer, input_columns=args.select_input_string)
 
+    # If we do not remove these, colossal AI will assume they are input tokens. This is because colossal AI was made by evil
+    # goblin people who hate me.
+    tokenized_train_data = tokenized_train_data.remove_columns(['text', 'meta'])
+    tokenized_train_data = tokenized_test_data.remove_columns(['text', 'meta'])
+
     # And now we'll need to add in some sort of length function
     # Since streaming doesn't let us know this, we'll just put it in the config
     train_dl = WrapDataloader(tokenized_train_data)
     test_dl = WrapDataloader(tokenized_test_data)
 
+    # Set the length
     train_dl.manually_set_length(args.train_len_if_stream)
     test_dl.manually_set_length(args.eval_len_if_stream)
 
-    # Turn the tokenized examples into a DataLoader for collosal AI to use
-    #train_dl = DataLoader(patched_train_data)
-    #test_dl= DataLoader(patched_test_data)
-
     # Put our little sequence length fix over it
     return train_dl, test_dl
-
-
-
-
-if __name__ == "__main__":
-    streamable_data, _ = make_test_dataloader()
-
-    print("getting first entry")
-    stream_first_entry = next(iter(streamable_data))
-    print(stream_first_entry['input_ids']) 
-    print('next shape', stream_first_entry['input_ids'].shape)
-
-#   print('nxt')
-#   stream_first_entry = next(iter(streamable_data))
-#   print(stream_first_entry['input_ids']) 
-#   print('next shape', stream_first_entry['input_ids'].shape)
 
