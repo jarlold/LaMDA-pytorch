@@ -18,7 +18,7 @@ args = CFG
 
 
 # Used to store the "offcut" after cutting the input from the db into the seq_length form config
-PREV_OFFCUT = torch.tensor([])
+PREV_OFFCUT = torch.tensor([], dtype=torch.int32)
 
 def prepare_example(tokenizer, example):
     global PREV_OFFCUT
