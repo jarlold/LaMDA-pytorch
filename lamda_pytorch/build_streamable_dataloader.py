@@ -54,6 +54,7 @@ def prepare_example(tokenizer, example):
 
 class WrapDataloader(DataLoader):
     def __len__(self):
+        return 1
         return self.manual_length
 
     def manually_set_length(self, length):
