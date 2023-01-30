@@ -132,12 +132,12 @@ class CFG:
     )
 
     train_len_if_stream: bool = field(
-        default=874378,
+        default=924632,
         metadata={"help": "If using streaming, the total number of data points in train set."}
     )
 
     eval_len_if_stream: bool = field(
-        default=924632,
+        default=874378
         metadata={"help": "If using streaming, the total number of data points in test set."}
     )
 
