@@ -57,7 +57,7 @@ class WrapDataloader(DataLoader):
         return self.manual_length
 
     def manually_set_length(self, length):
-        self.manual_length = length * 0
+        self.manual_length = length 
 
 
 def build_dataloaders():
